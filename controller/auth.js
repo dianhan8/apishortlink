@@ -1,7 +1,8 @@
 const TBUsers = require('./../models').users
 const JWT = require('jsonwebtoken')
 const moment = require('moment')
-
+const sendGrid = require('@sendgrid/mail')
+sendGrid.setApiKey(process.env.SENDGRID_API_KEY);
 exports.login = async (req, res) => {
     try {
         const email = req.body.email
@@ -52,8 +53,18 @@ exports.register = async (req, res) => {
                 disable: false,
                 verify_email: false,
                 verify_phonenumber: false,
-                premium: false
+                premium: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
             })
+            const msg = {
+                to: req.body.email,
+                from: 'support@nectly.com',
+                subject: 'Verify Account',
+                text: 'You have time for Verify Email',
+                html: `<strong>and easy to do anywhere, even with Node.js</strong><a href=https://active/${req.body.email}>Active</a>`,
+              };
+            await sendGrid.send(msg);
             res.send({
                 code: 201,
                 message: "Account sudah terbuat",
