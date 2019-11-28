@@ -8,7 +8,8 @@ module.exports = (sequelize, DataTypes) => {
     payment_number: DataTypes.INTEGER,
     disable: DataTypes.BOOLEAN,
     verify_email: DataTypes.BOOLEAN,
-    verify_phonenumber: DataTypes.BOOLEAN
+    verify_phonenumber: DataTypes.BOOLEAN,
+    premium: DataTypes.BOOLEAN
   }, {});
   users.associate = function(models) {
     // associations can be defined here

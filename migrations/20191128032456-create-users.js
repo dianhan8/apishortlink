@@ -32,6 +32,9 @@ module.exports = {
       verify_phonenumber: {
         type: Sequelize.BOOLEAN
       },
+      premium:{
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

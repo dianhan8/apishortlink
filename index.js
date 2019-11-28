@@ -36,12 +36,13 @@ app.group('/api', (router)=> {
     router.patch('/user/shutdown/:id/v1', UserController.disableById)
     router.delete('/user/:id/v1', UserController.deleteUserById)    
 
-    //Link Handlers
-    router.get('/links/v1', LinkController.getLinks)
+    //Link Handlers For User
+    router.get('/user/:userid/links/v1', LinkController.getLinks)
     router.get('/user/:userid/link/:id/v1', LinkController.getLinkById)
     router.put('/user/:userid/link/:id/v1', LinkController.updateLinkById)
     router.post('/user/:userid/link/v1', LinkController.createLinkByUserId)
     router.delete('/user/:userid/link/:id/v1', LinkController.deleteLinkByUserId)
+    router.patch('/user/userid/link/:id/redirect/v1', LinkController.redirectLink)
 })
 
 app.listen(9000, ()=> console.log('Run Server'))
