@@ -35,6 +35,9 @@ module.exports = {
       premium:{
         type: Sequelize.BOOLEAN
       },
+      code_verify: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

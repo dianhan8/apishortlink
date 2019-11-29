@@ -9,7 +9,8 @@ module.exports = (sequelize, DataTypes) => {
     disable: DataTypes.BOOLEAN,
     verify_email: DataTypes.BOOLEAN,
     verify_phonenumber: DataTypes.BOOLEAN,
-    premium: DataTypes.BOOLEAN
+    premium: DataTypes.BOOLEAN,
+    code_verify: DataTypes.INTEGER
   }, {});
   users.associate = function(models) {
     // associations can be defined here

@@ -14,9 +14,9 @@ app.get('/',(req,res)=> {
 
 
 //Controller 
-// const UserController = require('./controller/user')
-const AuthController = require('./controller/auth')
-// const LinkController = require('./controller/link')
+const UserController = require('./controller/user')
+const AuthController = require('./controller/auth') // Complete
+const LinkController = require('./controller/link')
 // const PaymentController = require('./controller/payment')
 
 app.group('/api', (router) => {
@@ -31,8 +31,9 @@ app.group('/api', (router) => {
     // router.get('/user/:email/v1', UserController.getUserByEmail)
     // router.put('/user/:id/v1', UserController.updateUserById)
     // router.post('/users/v1', UserController.createUser)
-    // router.patch('/user/:email/v1', UserController.verifyByEmail)
-    // router.patch('/user/:phonenumber/v1', UserController.verifyByPhoneNumber)
+    router.patch('/verify/token/:token/v1', AuthController.verifyByEmail)
+    router.post('/sendverification/v1', AuthController.sendVerfication)
+    router.patch('/user/verify/otp', AuthController.verifyByOTP)
     // router.patch('/user/shutdown/:id/v1', UserController.disableById)
     // router.delete('/user/:id/v1', UserController.deleteUserById)    
 
