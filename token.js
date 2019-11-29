@@ -1,12 +1,11 @@
-function generateOTP() { 
-          
-    // Declare a digits variable  
-    // which stores all digits 
-    var digits = '0123456789'; 
-    let OTP = ''; 
-    for (let i = 0; i < 4; i++ ) { 
-        OTP += digits[Math.floor(Math.random() * 10)]; 
-    } 
-    console.log(OTP); 
-}
-generateOTP()
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
+ 
+ console.log(makeid(6));

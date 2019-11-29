@@ -14,7 +14,7 @@ app.get('/',(req,res)=> {
 
 
 //Controller 
-const UserController = require('./controller/user')
+const UserController = require('./controller/user') // Complete
 const AuthController = require('./controller/auth') // Complete
 const LinkController = require('./controller/link')
 // const PaymentController = require('./controller/payment')
@@ -23,19 +23,18 @@ app.group('/api', (router) => {
     //Auth Handlers
     router.post('/login/v1', AuthController.login)
     router.post('/register/v1', AuthController.register)
-    // router.post('/forget/v1', AuthController.forget)
-
-    // //Users Handlers For Admin
-    // router.get('/users/v1', UserController.getUsers)
-    // router.get('/user/:id/v1', UserController.getUserById)
-    // router.get('/user/:email/v1', UserController.getUserByEmail)
-    // router.put('/user/:id/v1', UserController.updateUserById)
-    // router.post('/users/v1', UserController.createUser)
+    router.post('/forget/v1', AuthController.forget)
     router.patch('/verify/token/:token/v1', AuthController.verifyByEmail)
     router.post('/sendverification/v1', AuthController.sendVerfication)
-    router.patch('/user/verify/otp', AuthController.verifyByOTP)
-    // router.patch('/user/shutdown/:id/v1', UserController.disableById)
-    // router.delete('/user/:id/v1', UserController.deleteUserById)    
+    router.patch('/user/verify/otp/v1', AuthController.verifyByOTP)
+
+    // //Users Handlers For Admin
+    router.get('/users/v1', UserController.getUsers)
+    router.get('/user/:id/v1', UserController.getUserById)
+    router.put('/user/:id/v1', UserController.updateUserById)
+    router.post('/users/v1', UserController.createUser)
+    router.patch('/user/shutdown/:id/v1', UserController.disableById)
+    router.delete('/user/:id/v1', UserController.deleteUserById)    
 
     // //Link Handlers For User
     // router.get('/user/:userid/links/v1', LinkController.getLinks)

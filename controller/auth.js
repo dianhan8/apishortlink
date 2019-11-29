@@ -13,7 +13,7 @@ exports.login = async (req, res) => {
         const password = req.body.password
         const result = await TBUsers.findOne({ where: { email, password } })
         if (result) {
-            const dateNow = await moment(new Date()).add(60,'minutes')
+            const dateNow = await moment(new Date()).add(60, 'minutes')
             const token = await JWT.sign({
                 userid: result.id,
                 expired: dateNow,
@@ -57,6 +57,7 @@ exports.register = async (req, res) => {
                 disable: false,
                 verify_email: false,
                 verify_phonenumber: false,
+                code_verify: null,
                 premium: false,
                 createdAt: new Date(),
                 updatedAt: new Date()
@@ -64,7 +65,7 @@ exports.register = async (req, res) => {
             const HostUrl = process.env.URL
             const token = await JWT.sign({
                 email: req.body.email,
-                expired: moment(new Date()).add(60,'minutes')
+                expired: moment(new Date()).add(60, 'minutes')
             }, 'verify')
             const msg = {
                 to: req.body.email,
@@ -72,7 +73,7 @@ exports.register = async (req, res) => {
                 subject: 'Welcome to Nectly! Confirm Your Email!',
                 text: 'Welcome to Nectly! Confirm Your Email!',
                 html: `<strong>Confirm Email Now!</strong><br><a href='http://localhost:9000/verify/token/${token}/v1'>Verify</a>`,
-              };
+            };
             await sendGrid.send(msg);
             res.send({
                 code: 201,
@@ -88,31 +89,31 @@ exports.register = async (req, res) => {
         })
     }
 }
-exports.verifyByEmail = async(req, res) => {
+exports.verifyByEmail = async (req, res) => {
     try {
         const token = await JWT.decode(req.params.token)
         const email = token.email
-        const expired  = token.expired
-        if(new Date() > new Date(expired)){
+        const expired = token.expired
+        if (new Date() > new Date(expired)) {
             res.send({
                 code: 203,
                 message: 'Token sudah tidak berlaku!'
             })
-        }else{
-            await TBUsers.update({verify_email:true},{where: {email}})
-            .then(function(item){
-                res.send({
-                    code: 201,
-                    message: 'Account Sudah Di verifikasi'
+        } else {
+            await TBUsers.update({ verify_email: true }, { where: { email } })
+                .then(function (item) {
+                    res.send({
+                        code: 201,
+                        message: 'Account Sudah Di verifikasi'
+                    })
                 })
-            })
-            .catch(function(err){
-                res.send({
-                    code: 202,
-                    message: 'Account tidak berhasil Di verifikasi',
-                    error: err
+                .catch(function (err) {
+                    res.send({
+                        code: 202,
+                        message: 'Account tidak berhasil Di verifikasi',
+                        error: err
+                    })
                 })
-            })
         }
     } catch (error) {
         res.send({
@@ -123,60 +124,60 @@ exports.verifyByEmail = async(req, res) => {
     }
 }
 
-function generateOTP() { 
+function generateOTP() {
     // Declare a digits variable  
     // which stores all digits 
-    var digits = '0123456789'; 
-    let OTP = ''; 
-    for (let i = 0; i < 4; i++ ) { 
-        OTP += digits[Math.floor(Math.random() * 10)]; 
-    } 
-    return OTP; 
+    var digits = '0123456789';
+    let OTP = '';
+    for (let i = 0; i < 4; i++) {
+        OTP += digits[Math.floor(Math.random() * 10)];
+    }
+    return OTP;
 }
 
-exports.sendVerfication = async(req, res) => {
+exports.sendVerfication = async (req, res) => {
     try {
         const phonenumber = req.body.phonenumber
         const code = generateOTP()
-        await TBUsers.update({code_verify: code})
+        await TBUsers.update({ code_verify: code })
         await client.messages
-        .create({
-        body: `Your Nectly Verification Code: ${code}. JANGAN MEMBERITAHU KODE RAHASIA INI KE SIAPAPUN termasuk pihak Nectly.`,
-        from: '+12053902209',
-        to: phonenumber
-        })
-        .then(message => res.send({
-            code: '200',
-            status: message.status,
-            message: 'Kode verifikasi anda sudah di Kirim'
-        }))
-        .catch(error => res.send({
-            code: '202',
-            status: 'Failed',
-            message: 'Kode Tidak berhasil dikirim',
-            error: error
-        }))
+            .create({
+                body: `Your Nectly Verification Code: ${code}. JANGAN MEMBERITAHU KODE RAHASIA INI KE SIAPAPUN termasuk pihak Nectly.`,
+                from: '+12053902209',
+                to: phonenumber
+            })
+            .then(message => res.send({
+                code: '200',
+                status: message.status,
+                message: 'Kode verifikasi anda sudah di Kirim'
+            }))
+            .catch(error => res.send({
+                code: '202',
+                status: 'Failed',
+                message: 'Kode Tidak berhasil dikirim',
+                error: error
+            }))
     } catch (error) {
         res.send({
             code: 500,
             message: "Server Error",
             error: error
-        }) 
+        })
     }
 }
 
-exports.verifyByOTP = async(req, res) => {
+exports.verifyByOTP = async (req, res) => {
     try {
         const code = req.body.code
         const id = req.user.userid
-        const findSame = await TBUsers.findOne({where: id, code_verify: code})
-        if(findSame.id){
-            await TBUsers.update({verify_phonenumber: true},{where: id})
+        const findSame = await TBUsers.findOne({ where: id, code_verify: code })
+        if (findSame.id !== undefined) {
+            await TBUsers.update({ verify_phonenumber: true }, { where: id })
             res.send({
                 code: '201',
                 message: 'Account has Verified'
             })
-        }else{
+        } else {
             res.send({
                 code: '204',
                 message: 'Account not find in database'
@@ -187,6 +188,52 @@ exports.verifyByOTP = async(req, res) => {
             code: 500,
             message: "Server Error",
             error: error
-        }) 
+        })
+    }
+}
+
+exports.forget = async (req, res) => {
+    try {
+        const email = req.body.email
+        await TBUsers.findOne({ where: { email } })
+            .then(function (item) {
+                if (item.id !== undefined) {
+                    await client.messages
+                        .create({
+                            body: `Your Nectly Verification Code: ${item.code_verify}. JANGAN MEMBERITAHU KODE RAHASIA INI KE SIAPAPUN termasuk pihak Nectly.`,
+                            from: '+12053902209',
+                            to: item.phone_number
+                        })
+                        .then(message => res.send({
+                            code: '200',
+                            status: message.status,
+                            message: 'Kode verifikasi anda sudah di Kirim'
+                        }))
+                        .catch(error => res.send({
+                            code: '202',
+                            status: 'Failed',
+                            message: 'Kode Tidak berhasil dikirim',
+                            error: error
+                        }))
+                } else {
+                    res.send({
+                        code: '202',
+                        message: 'Email Yang di input tidak ada!'
+                    })
+                }
+            })
+            .catch(function (err) {
+                res.send({
+                    code: '203',
+                    message: 'Error Cant Forget Password',
+                    error: err
+                })
+            })
+    } catch (error) {
+        res.send({
+            code: 500,
+            message: "Server Error",
+            error: error
+        })
     }
 }
