@@ -6,20 +6,20 @@ exports.getUsers = async (req, res) => {
             .then(function (item) {
                 if (item.length > 0) {
                     res.send({
-                        code: '200',
+                        code: 200,
                         message: 'Success Fetch Data',
                         item
                     })
                 } else {
                     res.send({
-                        code: '204',
+                        code: 204,
                         message: 'Data kosong'
                     })
                 }
             })
             .catch(function (err) {
                 res.send({
-                    code: '202',
+                    code: 202,
                     message: 'Transcation Failed',
                     error: err
                 })
@@ -33,27 +33,27 @@ exports.getUsers = async (req, res) => {
     }
 }
 
-exports.getUserById = (req, res) => {
+exports.getUserById = async(req, res) => {
     try {
         const id = req.params.id
         await TBUsers.findOne({ where: { id } })
             .then(function (item) {
                 if (item.id !== undefined) {
                     res.send({
-                        code: '200',
+                        code: 200,
                         message: 'Success Get Data Users',
                         data: item
                     })
                 } else {
                     res.send({
-                        code: '204',
+                        code: 204,
                         message: 'Cannot Find Users Data'
                     })
                 }
             })
             .catch(function (err) {
                 res.send({
-                    code: '202',
+                    code: 202,
                     message: 'Error',
                     error: err
                 })
@@ -82,13 +82,13 @@ exports.updateUserById = async (req, res) => {
         })
             .then(function (item) {
                 res.send({
-                    code: '200',
+                    code: 200,
                     message: 'Success'
                 })
             })
             .catch(function (err) {
                 re.send({
-                    code: '204',
+                    code: 204,
                     message: 'Failed',
                     error: err
                 })
@@ -120,13 +120,13 @@ exports.createUser = async (req, res) => {
         })
         .then(function(item){
             res.send({
-                code: '201',
+                code: 201,
                 message: 'Success',
             })
         })
         .catch(function(err){
             res.send({
-                code: '203',
+                code: 203,
                 message: 'Failed'
             })
         })
@@ -145,13 +145,13 @@ exports.disableById = async(req, res) => {
         await TBUsers.update({disable: true},{where: {id}})
         .then(function(item){
             res.send({
-                code: '201',
+                code: 201,
                 message: 'Success Shutdown User'
             })
         })
         .catch(function(err){
             res.send({
-                code: '301',
+                code: 301,
                 message: 'Failed'
             })
         })
@@ -170,7 +170,7 @@ exports.deleteUserById = async(req, res) => {
         await TBUsers.destroy({where: {id}})
         .then(function(item){
             res.send({
-                code: '201',
+                code: 201,
                 message: 'Account Has Deleted'
             })
         })
