@@ -100,15 +100,16 @@ function makeid(length) {
 }
 exports.createLinkByUserId = async (req, res) => {
     try {
-        const url_out = makeid(6)
-        const userid = req.user.userid
+        const url_out = await makeid(6)
+        // const userid = req.user.userid
         await TBLink.create({
             title: req.body.title,
             url_in: req.body.url_in,
-            url_out: url_out,
-            user_id: userid,
+            url_out,
+            user_id: req.body.user_id,
             ipaddress: req.body.ipaddress,
             redirect: req.body.redirect,
+            click: 0,
             createdAt: new Date(),
             updatedAt: new Date()
         })

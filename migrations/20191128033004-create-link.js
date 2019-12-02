@@ -31,6 +31,9 @@ module.exports = {
       redirect: {
         type: Sequelize.BOOLEAN
       },
+      click: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

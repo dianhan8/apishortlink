@@ -6,7 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     url_out: DataTypes.STRING,
     user_id: DataTypes.INTEGER,
     ipaddress: DataTypes.STRING,
-    redirect: DataTypes.BOOLEAN
+    redirect: DataTypes.BOOLEAN,
+    click: DataTypes.INTEGER
   }, {});
   link.associate = function(models) {
     // associations can be defined here

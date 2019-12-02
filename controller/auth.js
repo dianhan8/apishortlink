@@ -2,23 +2,23 @@ const TBUsers = require('./../models').users
 const JWT = require('jsonwebtoken')
 const moment = require('moment')
 const sendGrid = require('@sendgrid/mail')
+const bcrypt = require('bcrypt');
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTHTOKEN;
 const client = require('twilio')(accountSid, authToken)
-const bcrypt = require('bcrypt');
 sendGrid.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.login = async (req, res) => {
     try {
         const email = req.body.email
-        const password = req.body.password
-        const result = await TBUsers.findOne({ where: { email, password } })
+        const result = await TBUsers.findOne({ where: { email } })
         if (result) {
-            bcrypt.compare(req.body.password, result.password, function (err, res) {
-                if (res) {
+            bcrypt.compare(req.body.password, result.password, function (err, results) {
+                if (results) {
                     const dateNow = moment(new Date()).add(60, 'minutes')
                     const token = JWT.sign({
                         userid: result.id,
+                        name: result.name,
                         expired: dateNow,
                         premium: result.premium
                     }, 'theending')
@@ -38,7 +38,7 @@ exports.login = async (req, res) => {
         } else {
             res.send({
                 code: 204,
-                message: "Wrong Email or Password!"
+                message: "Account anda tidak terdaftar."
             })
         }
     } catch (error) {
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
     try {
-        const password = await bcrypt.hash(req.body.password, 10)
+        const password = await bcrypt.hash(req.body.password, 6)
         const findSame = await TBUsers.findAll({ where: { email: req.body.email } })
         if (findSame.length > 0) {
             res.send({
@@ -64,7 +64,7 @@ exports.register = async (req, res) => {
                 email: req.body.email,
                 password,
                 name: req.body.name,
-                phonenumber: req.body.phonenumber,
+                phone_number: req.body.phonenumber,
                 payment_number: req.body.paymentnumber,
                 disable: false,
                 verify_email: false,
@@ -149,14 +149,15 @@ function generateOTP() {
 
 exports.sendVerfication = async (req, res) => {
     try {
+        const id = req.user.userid
         const phonenumber = req.body.phonenumber
         const code = generateOTP()
-        // await TBUsers.update({ code_verify: code })
+        await TBUsers.update({ code_verify: code }, { where: { id } })
         await client.messages.create({
-                body: `Your Nectly Verification Code: ${code}. JANGAN MEMBERITAHU KODE RAHASIA INI KE SIAPAPUN termasuk pihak Nectly.`,
-                from: '+12053902209',
-                to: phonenumber
-            })
+            body: `Your Nectly Verification Code: ${code}. JANGAN MEMBERITAHU KODE RAHASIA INI KE SIAPAPUN termasuk pihak Nectly.`,
+            from: '+12053902209',
+            to: phonenumber
+        })
             .then(message => res.send({
                 code: 200,
                 status: message.status,
