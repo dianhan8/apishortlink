@@ -1,14 +1,23 @@
 const TBLink = require('./../models').link
+const TBLimit = require('./../models').limit
 
 exports.getLinks = async (req, res) => {
     try {
         const user_id = req.user.userid
         await TBLink.findAll({ where: { user_id } })
             .then(function (item) {
-                res.send({
-                    code: 200,
-                    item
-                })
+                if (item.length > 0) {
+                    res.send({
+                        code: 200,
+                        item
+                    })
+                } else {
+                    res.send({
+                        code: 204,
+                        message: 'Data kosong',
+                        item: []
+                    })
+                }
             })
             .catch(function (err) {
                 res.send({
@@ -55,13 +64,19 @@ exports.getLinkById = async (req, res) => {
 }
 
 exports.updateLinkById = async (req, res) => {
+    const Ips = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress;
+    const IP = await Ips.split(":")[Ips.split(":").length - 1]
+    const IPs = IP.split(",")[0]
     try {
         const id = req.params.id
         const userid = req.user.userid
         await TBLink.update({
             title: req.body.title,
-            url_out: req.body.url_out,
-            ipaddress: req.body.ipaddress,
+            url_in: req.body.url_in,
+            ipaddress: IPs,
             redirect: req.body.redirect,
             updatedAt: new Date()
         },
@@ -100,20 +115,40 @@ function makeid(length) {
 }
 exports.createLinkByUserId = async (req, res) => {
     try {
+        const Ips = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress;
+        const IP = await Ips.split(":")[Ips.split(":").length - 1]
+        const IPs = IP.split(",")[0]
         const url_out = await makeid(6)
-        // const userid = req.user.userid
+        const userid = req.user.userid
         await TBLink.create({
             title: req.body.title,
             url_in: req.body.url_in,
             url_out,
-            user_id: req.body.user_id,
-            ipaddress: req.body.ipaddress,
+            user_id: userid,
+            ipaddress: IPs,
             redirect: req.body.redirect,
             click: 0,
             createdAt: new Date(),
             updatedAt: new Date()
         })
             .then(function (item) {
+                TBLimit.findOne({ where: { userid } })
+                .then(result => {
+                    req.body.redirect == true ?
+                    TBLimit.update({
+                        limitLink: result.limitLink - 1,
+                        limitRedirect: result.limitRedirect -1,
+                        updateAt: new Date()
+                    },{where: {userid}})
+                    :
+                    TBLimit.update({
+                        limitLink: result.limitLink - 1,
+                        updateAt: new Date()
+                    },{where: {userid}})
+                })
                 res.send({
                     code: 200,
                     message: 'Success',
@@ -169,22 +204,22 @@ exports.redirectLink = async (req, res) => {
         const user_id = req.user.userid
         await TBLink.update({
             redirect: req.body.redirect
-        },{
-            where: {id, user_id}
+        }, {
+            where: { id, user_id }
         })
-        .then(function(item){
-            res.send({
-                code: 201,
-                message: 'Success'
+            .then(function (item) {
+                res.send({
+                    code: 201,
+                    message: 'Success'
+                })
             })
-        })
-        .catch(function(err){
-            res.send({
-                code: 203,
-                message: 'Failed',
-                error: err
+            .catch(function (err) {
+                res.send({
+                    code: 203,
+                    message: 'Failed',
+                    error: err
+                })
             })
-        })
     } catch (error) {
         res.send({
             code: 500,

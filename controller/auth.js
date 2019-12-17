@@ -3,6 +3,7 @@ const JWT = require('jsonwebtoken')
 const moment = require('moment')
 const sendGrid = require('@sendgrid/mail')
 const bcrypt = require('bcrypt');
+const TBLimit = require('./../models').limit
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTHTOKEN;
 const client = require('twilio')(accountSid, authToken)
@@ -20,13 +21,17 @@ exports.login = async (req, res) => {
                         userid: result.id,
                         name: result.name,
                         expired: dateNow,
+                        verifyByEmail: result.verify_email,
                         premium: result.premium
                     }, 'theending')
-                    res.send({
-                        code: 200,
-                        name: result.name,
-                        token
-                    })
+                    if (token) {
+                        res.send({
+                            code: 200,
+                            name: result.name,
+                            token
+                        })
+                    }
+
                 } else {
                     res.send({
                         code: 301,
@@ -60,7 +65,7 @@ exports.register = async (req, res) => {
                 message: "Sudah ada users yang memakai email ini."
             })
         } else {
-            await TBUsers.create({
+            const create = await TBUsers.create({
                 email: req.body.email,
                 password,
                 name: req.body.name,
@@ -79,19 +84,26 @@ exports.register = async (req, res) => {
                 email: req.body.email,
                 expired: moment(new Date()).add(60, 'minutes')
             }, 'verify')
-            const msg = {
-                to: req.body.email,
-                from: 'no-reply@nectly.com',
-                subject: 'Welcome to Nectly! Confirm Your Email!',
-                text: 'Welcome to Nectly! Confirm Your Email!',
-                html: `<strong>Confirm Email Now!</strong><br><a href='http://localhost:9000/verify/token/${token}/v1'>Verify</a>`,
-            };
-            await sendGrid.send(msg);
-            res.send({
-                code: 201,
-                message: "Account sudah terbuat, Silakan verifikasi Email Dari sekarang.",
-                ...req.body
-            })
+            if (token) {
+                await TBLimit.create({
+                    userId: create.id,
+                    limitLink: 1000,
+                    limitRedirect: 100
+                })
+                const msg = {
+                    to: req.body.email,
+                    from: 'no-reply@nectly.com',
+                    subject: 'Welcome to Nectly! Confirm Your Email!',
+                    text: 'Welcome to Nectly! Confirm Your Email!',
+                    html: `<strong>Confirm Email Now!</strong><br><a href='http://localhost:9000/verify/token/${token}/v1'>Verify</a>`,
+                };
+                await sendGrid.send(msg);
+                res.send({
+                    code: 201,
+                    message: "Account sudah terbuat, Silakan verifikasi Email Dari sekarang.",
+                    ...req.body
+                })
+            }
         }
     } catch (error) {
         res.send({

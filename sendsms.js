@@ -1,11 +1,13 @@
-const accountSid = process.env.ACCOUNT_SID;
-const authToken = process.env.AUTHTOKEN;
-const client = require('twilio')(accountSid, authToken)
-client.messages
-  .create({
-     body: 'Just Testing from Nectly. Do you want eat some food?',
-     from: '+12053902209',
-     to: '+62895354636192'
-   })
-  .then(message => console.log(message.sid))
-  .catch(error => console.log(error))
+function getClientIP() {
+  var Ips = req.headers['x-forwarded-for'] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      req.connection.socket.remoteAddress;
+  var IP = ''
+  if (Ips.indexOf(":") !== -1) {
+      IP += Ips.split(":")[Ips.split(":").length - 1]
+  }
+  return IP.split(",")[0]
+}
+
+console.log(getClientIP())

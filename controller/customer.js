@@ -1,4 +1,5 @@
 const TBLink = require('./../models').link
+const TBCount = require('./../models').count
 
 exports.Linking = async (req, res) => {
     try {
@@ -8,7 +9,7 @@ exports.Linking = async (req, res) => {
             .then(function (item) {
                 if (item.id !== undefined) {
                     if (item.redirect == false) {
-                        if (ipaddress == item.ipaddress) {
+                        if (ipaddress == item.ipaddress) { //JIKA ADDRESS SAMA
                             res.send({
                                 code: 200,
                                 url: item.url_in
@@ -16,6 +17,7 @@ exports.Linking = async (req, res) => {
                         } else {
                             TBLink.update({ click: item.click + 1 }, { where: { id: item.id } })
                                 .then(function (item) {
+                                    TBCount.create({link_id: item.id, date: new Date()})
                                     res.send({
                                         code: 200,
                                         url: item.url_in

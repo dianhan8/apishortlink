@@ -1,6 +1,8 @@
 const express = require('express')
 const bodyparser = require('body-parser')
 const cors = require('cors')
+const moment = require('moment')
+var cron = require('node-cron');
 require('express-group-routes')
 const app = express()
 app.use(cors({
@@ -23,13 +25,30 @@ const LinkController = require('./controller/link') // Complete
 const LinkCustomerController = require('./controller/customer')
 // const PaymentController = require('./controller/payment')
 
+app.get('/verify/token/:token/v1', AuthController.verifyByEmail)
 
+function getClientIP(req, res, next){
+    try {
+        var Ips = req.headers['x-forwarded-for'] ||
+                  req.connection.remoteAddress ||
+                  req.socket.remoteAddress ||
+                  req.connection.socket.remoteAddress;
+        if(Ips.indexOf(":") !== -1){
+            Ips = Ips.split(":")[Ips.split(":").length - 1]
+        }
+        return res.json({IP: Ips.split(",")[0]})
+    } catch (error) {
+        return res.json({message: 'Error'})
+    }
+}
+cron.schedule('* * * * *', () => {
+    console.log('running a task every minute');
+  });
 app.group('/api', (router) => {
     //Auth Handlers
     router.post('/login/v1', AuthController.login)
     router.post('/register/v1', AuthController.register)
     router.post('/forget/v1', AuthController.forget)
-    router.patch('/verify/token/:token/v1', AuthController.verifyByEmail)
     router.post('/sendverification/v1',Authenticated, AuthController.sendVerfication)
     router.patch('/user/verify/otp/v1',Authenticated, AuthController.verifyByOTP)
 
@@ -47,13 +66,14 @@ app.group('/api', (router) => {
     router.put('/user/:userid/link/:id/v1',Authenticated, LinkController.updateLinkById)
     router.post('/user/:userid/link/v1',Authenticated, LinkController.createLinkByUserId)
     router.delete('/user/:userid/link/:id/v1',Authenticated, LinkController.deleteLinkByUserId)
-    router.patch('/user/userid/link/:id/redirect/v1',Authenticated, LinkController.redirectLink)
+    router.patch('/user/:userid/link/:id/redirect/v1',Authenticated, LinkController.redirectLink)
 
     //For User Costumers
     router.get('/link/:url_out', LinkCustomerController.Linking)
+    router.get('/getIp', getClientIP)
 })
 
-app.listen(9000, ()=> console.log('Run Server'))
+app.listen(process.env.PORT || 3000); 
 
 module.exports = {
     app
